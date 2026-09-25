@@ -1,0 +1,30 @@
+doctype html
+html(lang="it")
+  head
+    meta(charset="utf-8")
+    title Login con credenziale
+  body
+    h1 Login con credenziale
+    p Copia questo invito nel terminale Holder:
+    p#invitation(data-oob=oob_id data-uid=u_id)= url
+    p#status In attesa della prova della credenziale...
+    a(href=cors_origin) Torna al client
+    script.
+      (async () => {
+        const invitation = document.getElementById('invitation');
+        try {
+          const response = await fetch('/interaction/' + encodeURIComponent(invitation.dataset.uid) + '/login', {
+            method: 'POST', credentials: 'same-origin', redirect: 'error',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oob_id: invitation.dataset.oob })
+          });
+          if (!response.ok) throw new Error('Login non completato');
+          const result = await response.json();
+          if (typeof result.redirectTo !== 'string') throw new Error('Risposta non valida');
+          const next = new URL(result.redirectTo, window.location.origin);
+          if (next.origin !== window.location.origin) throw new Error('Destinazione non valida');
+          window.location.assign(next.href);
+        } catch {
+          document.getElementById('status').textContent = 'Login non completato. Torna al client e avvia un nuovo tentativo.';
+        }
+      })();

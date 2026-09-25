@@ -1,2 +1,22 @@
 *.env
 node_modules/
+
+# Configurazioni private
+.env
+**/.env
+**/.env.*
+!**/.env.example
+*.env
+
+# Dipendenze installate
+**/node_modules/
+
+# Dati generati durante l'esecuzione
+**/.oidc-data/
+**/.stability-backups/
+
+# Backup e log
+*.bak
+*.before-*
+*.log
+
