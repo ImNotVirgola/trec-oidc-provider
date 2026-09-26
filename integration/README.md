@@ -2,7 +2,7 @@
 
 Questa cartella contiene l'integrazione del progetto funzionante fornito dall'utente nel repository originale https://github.com/ImNotVirgola/trec-oidc-provider, commit `9ad2a3c7dba8908b57051064c94c6478bf6ca08c`.
 
-Per avviare questa variante seguire [LEGGIMI.txt](LEGGIMI.txt), con comandi in testo semplice. Non occorre modificare `index.js`, `provider.js`, i sorgenti TypeScript, i package originali o `node_modules` a mano.
+Per avviare questa variante seguire [LEGGIMI.txt](LEGGIMI.txt). Non occorre modificare `index.js`, `provider.js`, i sorgenti TypeScript, i package originali o `node_modules` a mano.
 
 ## Come funziona
 
