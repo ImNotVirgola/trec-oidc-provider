@@ -12,9 +12,9 @@ Non eliminare il vecchio progetto e non eliminare ~/.afj.
 
 Esegui, una riga alla volta:
 
-cd ~/Tirocinio
-unzip /mnt/d/Desktop/trec-oidc-provider-integrato.zip
-cd ~/Tirocinio/trec-oidc-provider-integrato
+cd <percorso del progetto>
+unzip <percorso di questa fork>/trec-oidc-provider.zip
+cd <percorso del progetto>/trec-oidc-provider
 nvm use 18
 cd integration
 npm ci
@@ -37,7 +37,7 @@ gli script di installazione servono per le librerie native degli agenti.
 
 Dalla radice della nuova cartella esegui:
 
-node integration/configure.cjs "$HOME/Tirocinio/trec-oidc-provider"
+node integration/configure.cjs "<percorso del progetto>/trec-oidc-provider"
 node integration/verify-originals.cjs
 
 Risultato della seconda riga: ORIGINAL_FILES_UNCHANGED=44
@@ -53,32 +53,23 @@ Se dice "Configurazione gia presente", non ripetere l'importazione: usa i file g
 generati. Per controllarli localmente puoi aprirli con nano, senza incollarli in chat.
 Se il vecchio progetto si trova altrove, sostituisci soltanto il percorso sorgente.
 
-3. TEST AUTOMATICI
-
-cd integration
-npm test
-cd ..
-
-Sono previsti 13 test. I test OIDC usano account di prova e quelli Credo simulano
-gli eventi: non usano il tuo wallet e non scrivono sulla blockchain.
-
-4. AVVIO: TRE TERMINALI WSL
+3. AVVIO: TRE TERMINALI
 
 TERMINALE 1 - Provider e Verifier insieme:
 
-cd ~/Tirocinio/trec-oidc-provider-integrato
+cd <percorso del progetto con integrations>/trec-oidc-provider
 nvm use 18
 node integration/run.cjs provider
 
 TERMINALE 2 - Holder con la credenziale già ricevuta:
 
-cd ~/Tirocinio/trec-oidc-provider-integrato
+cd <percorso del progetto con integrations>/trec-oidc-provider
 nvm use 18
 node integration/run.cjs holder
 
 TERMINALE 3 - Client locale:
 
-cd ~/Tirocinio/trec-oidc-provider-integrato
+cd <percorso del progetto con integrations>/trec-oidc-provider
 nvm use 18
 node integration/run.cjs client
 
@@ -104,13 +95,13 @@ del client. Non riutilizzare una vecchia pagina callback o un vecchio invito.
 Per questi test non avviare anche verification/test-proof.ts: il Verifier viene
 già avviato dal provider.
 
-5. ISSUER: SOLO SE VUOI EMETTERE UN'ALTRA CREDENZIALE DIMOSTRATIVA
+4. ISSUER: SOLO SE VUOI EMETTERE UN'ALTRA CREDENZIALE DIMOSTRATIVA
 
 Non è necessario se il tuo Holder conserva già la credenziale funzionante.
 Il comando aggiunto riutilizza la Credential Definition esistente e gli attributi
 dimostrativi dell'Issuer originale. Non registra DID, schema o Credential Definition.
 
-cd ~/Tirocinio/trec-oidc-provider-integrato
+cd <percorso del progetto con integrations>/trec-oidc-provider
 nvm use 18
 node integration/run.cjs issuer
 
@@ -124,10 +115,9 @@ did:cheqd:testnet:3ee6c158-abf7-457b-9ef1-a6a5f8f740c1/resources/6b0cc7d9-08df-4
 Schema già registrato:
 did:cheqd:testnet:3ee6c158-abf7-457b-9ef1-a6a5f8f740c1/resources/0dd248ec-75b2-4498-b3c8-2f4164aaa470
 
-6. SE QUALCOSA NON PARTE
+5. SE QUALCOSA NON PARTE
 
-"Wallet esistente non trovato": verifica di essere nello stesso utente WSL e
-di aver importato gli ID corretti. Il programma si ferma invece di creare un
+"Wallet esistente non trovato": verifica di aver importato gli ID corretti. Il programma si ferma invece di creare un
 wallet vuoto. Non cambiare le chiavi dei wallet.
 
 "File originale modificato": confronta il file indicato con lo ZIP consegnato.
@@ -137,9 +127,6 @@ il vincolo di questa integrazione.
 "INVALID_STATE" o callback non valida: riparti da http://localhost:3004 e usa
 un nuovo login; il codice di autorizzazione si usa una sola volta.
 
-I file integration/config/*.env e integration/.oidc-data sono privati e non
-sono inclusi nello ZIP. Mantienili insieme se fai un backup del nuovo ambiente.
-
 Verifiche eseguite: test HTTP/JWT e persistenza superati su Node 18.20.8.
-Da ripetere nel tuo WSL: il login completo con i tuoi wallet e cheqd Testnet.
-Il collaudo degli agenti nativi non è stato possibile nel Windows di preparazione.
+
+Per le prove è stato usato un wallet Keplr. Cambiare i valori nei file in base alle proprie esigenze
