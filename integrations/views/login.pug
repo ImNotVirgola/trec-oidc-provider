@@ -2,29 +2,22 @@ doctype html
 html(lang="it")
   head
     meta(charset="utf-8")
-    title Login con credenziale
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    title Accesso con credenziale TREC
+    link(rel="stylesheet" href="/public/style.css")
+    script(src="/public/login.js" defer)
   body
-    h1 Login con credenziale
-    p Copia questo invito nel terminale Holder:
-    p#invitation(data-oob=oob_id data-uid=u_id)= url
-    p#status In attesa della prova della credenziale...
-    a(href=cors_origin) Torna al client
-    script.
-      (async () => {
-        const invitation = document.getElementById('invitation');
-        try {
-          const response = await fetch('/interaction/' + encodeURIComponent(invitation.dataset.uid) + '/login', {
-            method: 'POST', credentials: 'same-origin', redirect: 'error',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ oob_id: invitation.dataset.oob })
-          });
-          if (!response.ok) throw new Error('Login non completato');
-          const result = await response.json();
-          if (typeof result.redirectTo !== 'string') throw new Error('Risposta non valida');
-          const next = new URL(result.redirectTo, window.location.origin);
-          if (next.origin !== window.location.origin) throw new Error('Destinazione non valida');
-          window.location.assign(next.href);
-        } catch {
-          document.getElementById('status').textContent = 'Login non completato. Torna al client e avvia un nuovo tentativo.';
-        }
-      })();
+    main#login(data-uid=uid)
+      p.eyebrow AUTENTICAZIONE TREC
+      h1 Scansiona il QR con il tuo wallet
+      p Usa un wallet compatibile DIDComm e AnonCreds che possieda la tua credenziale TREC.
+      if qr
+        img.qr(src=qr alt="QR dell’invito DIDComm per questo accesso" width="400" height="400")
+      p#status(role="status" aria-live="polite")= status
+      details
+        summary Attributi richiesti per l’accesso
+        p issuerDid, holderDid, givenName, familyName, dateOfBirth, phone, email, fiscalCode, gender.
+        p Confermando la presentazione nel wallet autorizzi la condivisione di questi attributi con il client TREC.
+      form#complete(method="post" action='/interaction/'+uid+'/complete')
+        input(type="hidden" name="csrf" value=csrf)
+      a(href=clientUrl) Torna al client

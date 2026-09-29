@@ -1,34 +1,51 @@
-# Rapporto di verifica
+# Rapporto dei test — 28 settembre 2026
 
-Base originale: commit `9ad2a3c7dba8908b57051064c94c6478bf6ca08c` del repository ImNotVirgola/trec-oidc-provider. Confronto con i sorgenti dello ZIP fornito dall'utente; lettura del README principale e dei README di Issuer e Holder.
+Esecuzione finale con Node.js **22.14.0**, Windows: **16 test, 15 superati, 0 falliti, 1 saltato**.
 
-## Risultati
+Comando, dalla cartella integrations:
 
-- 44 file originali verificati con SHA-256, senza differenze.
-- 15 test superati su Node 18.20.8, incluso il caricamento reale del modulo Credo cheqd e della dipendenza CommonJS did-jwt.
-- Secondo login HTTP con la stessa sessione e consenso già memorizzato: completamento verificato senza un nuovo consenso. La pagina di login aggiunta naviga il browser alla ripresa OIDC; non segue la callback del client dentro fetch. Script della pagina verificato con un browser simulato, senza disabilitare cookie o state.
-- Provider e tarball originali effettivamente caricati nei test HTTP; trasformazioni applicate in memoria dal medesimo loader usato per l'avvio.
-- Discovery, Authorization Code, PKCE S256 e scambio su `/token` senza cookie di sessione del browser.
-- Due utenti contemporanei: nessuna mescolanza dei claim negli access token.
-- Verifica crittografica degli ID token e degli access token JWT: issuer, audience, soggetto e nonce dell'ID token.
-- Richiesta senza scope `trec`: assenza degli attributi personali nell'access token.
-- Riutilizzo del codice di autorizzazione respinto.
-- Account verificati ricaricabili da un nuovo processo.
-- Persistenza cifrata, scadenza, consumo dei codici, indici e revoca per grant; chiave errata respinta.
-- Sessioni Express e chiavi RSA mantenute tra istanze dei rispettivi componenti.
-- Coordinamento Credo: login ripetuti, eventi duplicati, invito non associato, connessione completata anticipatamente, prova non verificata, attributi da credenziali differenti, timeout e disconnessione.
-- Sorgenti JS e TS adattati in memoria compilati senza scritture nei file originali.
+```sh
+node --test tests/original.test.cjs tests/login.test.cjs tests/e2e.test.cjs tests/client.test.cjs tests/native.test.cjs
+```
 
-## Limiti del collaudo
+## Risultati e loro portata
 
-Correzione successiva al primo avvio dell'utente: `did-jwt 8.0.18` caricava `@scure/base 2.4.0` ESM tramite `require`, incompatibile con Node 18. L'override aggiunto in `integrations/package.json` fissa `did-jwt` a `8.0.4`, la versione del progetto funzionante fornito dall'utente; il lockfile è stato aggiornato. Il nuovo test copre questa catena di importazioni, che i precedenti test HTTP non caricavano.
+| Controllo | Risultato | Evidenza / limite |
+|---|---|---|
+| ORIGINAL_PROJECT_UNCHANGED | true | SHA-256 di tutti i 44 file del commit originale |
+| OIDC_DISCOVERY_OK | true | Endpoint HTTP di oidc-provider ufficiale 8.5.2 |
+| QR_INVITATION_CREATED | true, invito simulato | Immagine PNG generata localmente, decodificata e confrontata con l'URL OOB della fixture |
+| PROOF_VERIFIED | **NON ESEGUITO con Credo reale** | Il test automatico emette invece PROOF_VERIFIED_SIMULATED=true |
+| AUTHORIZATION_CODE_OK | true, proof simulata | Authorization Code Flow sul vero provider HTTP |
+| JWT_SIGNATURE_VALID | true | Firma RSA del provider verificata tramite JWKS e jose |
+| JWT_ALL_TREC_CLAIMS_PRESENT | true, dati simulati | Nove claim top-level, identità e grant correttamente associati |
+| SECOND_LOGIN_OK | true, proof simulata | Due login sul medesimo server, anche attraverso il client consegnato |
+| NATIVE_LIBRARIES_AVAILABLE | false | Probe nativo saltato: FFI / Askar / AnonCreds non disponibili |
 
-Il test HTTP usa account simulati per attraversare l'interazione OIDC. I test del coordinamento usano eventi Credo simulati; non costituiscono una verifica crittografica AnonCreds reale. Nessun bypass di test è richiamato da `run.cjs`: i relativi strumenti rimangono in `tests/`.
+## Controlli automatici eseguiti
 
-La preparazione è avvenuta su Windows. Le librerie native FFI di Askar e AnonCreds non erano caricabili con il runtime disponibile; per eseguire i test senza agenti è stata completata l'installazione locale con gli script nativi disabilitati. Questo non è il comando consigliato all'utente: nel suo WSL va eseguito `npm ci` normalmente. I wallet privati non sono stati copiati o aperti.
+- State errato, cookie mancante e callback consumata vengono rifiutati.
+- ID token con nonce, issuer, audience, scadenza o firma errati viene rifiutato dal client.
+- Access token con attributi mancanti o identità incoerente viene rifiutato.
+- Code riutilizzato e PKCE errato vengono rifiutati dal vero endpoint token.
+- Due utenti concorrenti ricevono gli attributi del proprio grant.
+- Nessun completamento prima della proof; proof di un'altra sessione o con altro identificativo ignorata.
+- Risultato non verificato, Credential Definition errata, nonce diverso, attributi mancanti o provenienti da credenziali differenti vengono rifiutati dalla logica applicativa.
+- Rifiuto, timeout ed eventi arrivati dopo la scadenza non completano il login.
+- Evento anticipato rispetto al ritorno di requestProof e connessioni duplicate vengono gestiti; il numero di listener della fixture resta costante.
+- Configurazione originale letta senza scritture e senza importare seed del pagatore Cosmos.
+- Dipendenza ufficiale npm controllata: nessuna modifica al tarball originale o ai moduli del provider.
 
-Il runtime Node 18 usato nei test Windows ha richiesto le opzioni di risoluzione dei percorsi `--preserve-symlinks --preserve-symlinks-main` nell'ambiente sandbox. Queste opzioni non sono impostate né richieste dagli script consegnati per WSL.
+## Cosa non è stato verificato
 
-Rimane da collaudare nel WSL dell'utente l'intero percorso con la credenziale già emessa e cheqd Testnet. Nella conversazione precedente quel percorso era stato completato con la versione modificata del progetto; ciò non viene presentato come un test già eseguito su questa nuova confezione aggiuntiva.
+**Non è stato eseguito un login end-to-end con una vera proof AnonCreds.** La suite HTTP usa un agente simulato soltanto al confine Credo: non prova che una credenziale reale sia risolvibile sulla rete o presentabile dal wallet dell'utente.
 
-Non sono stati collaudati deployment pubblico, più istanze del provider, migrazione delle sessioni OIDC precedenti, grant refresh token o un'app TREC esterna. Il client dimostrativo verifica e scarta i token; non implementa una sessione applicativa TREC.
+In questo ambiente l'installazione nativa FFI è fallita perché node-gyp non ha trovato una toolchain Visual Studio compatibile. I pacchetti JavaScript sono stati installati senza script per poter eseguire i test OIDC e crittografici; questo non costituisce un'installazione completa del runtime Credo. L'accesso alla distribuzione WSL non era disponibile, né erano disponibili configurazioni esterne di due wallet utilizzabili per il test reale.
+
+Il comando live senza le due configurazioni termina con errore di prerequisiti, non con una prova riuscita. È incluso `tests/live.cjs` per eseguire il percorso reale in un ambiente predisposto, con wallet e credenziale già esistenti. Non effettua provisioning.
+
+Non sono stati verificati uno scanner mobile specifico, la raggiungibilità DIDComm fra dispositivi, il riuso del database privato dell'utente o una distribuzione HTTPS. Il browser grafico non è stato collaudato manualmente; la suite verifica via HTTP la pagina e decodifica il QR prodotto.
+
+## Integrità della consegna
+
+Lo ZIP contiene i file originali e soltanto aggiunte sotto integrations/. Non contiene node_modules o configurazioni private aggiunte. Il provider originale conserva la chiave dimostrativa pubblicata nel repository, necessaria per mantenere i suoi byte invariati; il nuovo server non la usa e genera una propria chiave temporanea in memoria.
