@@ -1,0 +1,32 @@
+{
+  "cheqd": {
+    "network": "testnet",
+    "rpcUrl": "https://rpc.cheqd.network",
+    "issuerDid": "did:cheqd:testnet:0dc326ad-0448-4397-9618-f93f0397f9d0",
+    "schemaId": "did:cheqd:testnet:0dc326ad-0448-4397-9618-f93f0397f9d0/resources/ce27ee35-3fec-48d7-a8f8-c72bb226804d",
+    "credentialDefinitionId": "did:cheqd:testnet:0dc326ad-0448-4397-9618-f93f0397f9d0/resources/a3253d35-9e65-4575-a2c2-120aacf2e80f"
+  },
+  "issuer": {
+    "walletId": "issuer-ceab728a-0f99-47b3-867f-1c3c3707b446",
+    "endpoint": "http://192.168.0.101:3003",
+    "port": 3003
+  },
+  "verifier": {
+    "walletId": "trec-verifier-e86633fc-b913-435b-b4ea-504e3f96951f",
+    "endpoint": "http://192.168.0.101:3001",
+    "port": 3001
+  },
+  "testHolder": {
+    "did": "did:cheqd:testnet:3924dcdd-2361-41f7-873f-8449f0b5eebb",
+    "walletId": "holder-46d7af0b-241c-4b45-878f-ebd4abe3ec30"
+  },
+  "oidc": {
+    "issuer": "http://localhost:3000",
+    "clientId": "trec-demo",
+    "redirectUri": "http://localhost:3004/callback",
+    "resource": "http://localhost:3000/trec-api",
+    "bindHost": "127.0.0.1",
+    "clientBindHost": "127.0.0.1"
+  },
+  "proofTimeoutSeconds": 180
+}
