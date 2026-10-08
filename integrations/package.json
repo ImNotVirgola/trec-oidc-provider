@@ -8,8 +8,9 @@
   "scripts": {
     "start": "node run.cjs server",
     "client": "node run.cjs client",
-    "test": "node --test tests/original.test.cjs tests/login.test.cjs tests/e2e.test.cjs tests/client.test.cjs tests/native.test.cjs",
-    "test:live": "node tests/live.cjs"
+    "test": "node --test tests/original.test.cjs tests/login.test.cjs tests/e2e.test.cjs tests/client.test.cjs tests/native.test.cjs tests/holder.test.cjs tests/profile.test.cjs",
+    "test:live": "node tests/live.cjs",
+    "holder": "node holder.cjs"
   },
   "dependencies": {
     "@credo-ts/anoncreds": "0.5.13",

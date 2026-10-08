@@ -1,0 +1,78 @@
+name: trec-demo
+services:
+  server:
+    build: .
+    image: trec-demo:local
+    init: true
+    user: "${TREC_UID:-1000}:${TREC_GID:-1000}"
+    environment:
+      TREC_AUTH_ENV: /run/secrets/auth
+      VERIFIER_WALLET_PATH: /wallet/sqlite.db
+      VERIFIER_ENDPOINT: http://localhost:3001
+      VERIFIER_PORT: "3001"
+      OIDC_ISSUER: http://localhost:3000
+      OIDC_REDIRECT_URI: http://localhost:3004/callback
+      OIDC_RESOURCE: http://localhost:3000/trec-api
+      OIDC_BIND_HOST: 0.0.0.0
+    secrets: [auth]
+    volumes:
+      - type: bind
+        source: ${TREC_VERIFIER_WALLET_DIR:?Set existing Verifier wallet directory}
+        target: /wallet
+        bind:
+          create_host_path: false
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:3004:3004"
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://localhost:3000/.well-known/openid-configuration').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+      start_period: 30s
+  client:
+    image: trec-demo:local
+    pull_policy: never
+    init: true
+    user: "${TREC_UID:-1000}:${TREC_GID:-1000}"
+    network_mode: service:server
+    depends_on:
+      server:
+        condition: service_healthy
+    command: [node, run.cjs, client]
+    environment:
+      TREC_AUTH_ENV: /run/secrets/auth
+      OIDC_ISSUER: http://localhost:3000
+      OIDC_REDIRECT_URI: http://localhost:3004/callback
+      OIDC_RESOURCE: http://localhost:3000/trec-api
+      CLIENT_BIND_HOST: 0.0.0.0
+    secrets: [auth]
+  holder:
+    image: trec-demo:local
+    pull_policy: never
+    init: true
+    user: "${TREC_UID:-1000}:${TREC_GID:-1000}"
+    network_mode: service:server
+    depends_on:
+      server:
+        condition: service_healthy
+    command: [node, holder.cjs]
+    stdin_open: true
+    tty: true
+    environment:
+      TREC_HOLDER_ENV: /run/secrets/holder
+      HOLDER_WALLET_PATH: /wallet/sqlite.db
+      HOLDER_ENDPOINT: http://localhost:3002
+      HOLDER_PORT: "3002"
+    secrets: [holder]
+    volumes:
+      - type: bind
+        source: ${TREC_HOLDER_WALLET_DIR:?Set existing Holder wallet directory}
+        target: /wallet
+        bind:
+          create_host_path: false
+secrets:
+  auth:
+    file: ${TREC_AUTH_ENV:?Set external auth.env path}
+  holder:
+    file: ${TREC_HOLDER_ENV:?Set external holder.env path}

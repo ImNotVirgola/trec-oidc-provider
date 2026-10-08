@@ -1,5 +1,7 @@
 # Integrazione dell'autenticazione decentralizzata TREC
 
+Per la dimostrazione minima Holder → Proof → OIDC → JWT → risorsa protetta, vedere **[DEMO.md](DEMO.md)**. Il client ora conserva l'access token soltanto in memoria fino alla scadenza per la richiesta dimostrativa; mostra un payload con valori personali oscurati. Non sono stati modificati gli identificativi provisionati o il formato dei token.
+
 Questa cartella contiene l'integrazione dell'autenticazione decentralizzata sviluppata a partire dal progetto originale `trec-oidc-provider`.
 
 Il progetto originale rimane conservato nel repository. L'implementazione presente in `integrations/` aggiunge un flusso di autenticazione basato su:

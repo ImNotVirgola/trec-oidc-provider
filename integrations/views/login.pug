@@ -15,6 +15,10 @@ html(lang="it")
         img.qr(src=qr alt="QR dell’invito DIDComm per questo accesso" width="400" height="400")
       p#status(role="status" aria-live="polite")= status
       details
+        summary Invito per il Holder locale di test
+        p Lo stesso payload DIDComm contenuto nel QR. Copialo nel terminale del Holder.
+        textarea(readonly rows="5" aria-label="Invito DIDComm/OOB")= invitationUrl
+      details
         summary Attributi richiesti per l’accesso
         p issuerDid, holderDid, givenName, familyName, dateOfBirth, phone, email, fiscalCode, gender.
         p Confermando la presentazione nel wallet autorizzi la condivisione di questi attributi con il client TREC.

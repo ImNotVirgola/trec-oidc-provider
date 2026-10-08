@@ -1,15 +1,19 @@
+console.log('AVVIO: caricamento configurazione');
 const {loadConfig}=require('./runtime/config.cjs');
 async function main() {
   const mode=process.argv[2];if(!['server','client'].includes(mode))throw Error('Uso: node integrations/run.cjs server|client');
   const config=loadConfig();
+  console.log('AVVIO: configurazione caricata');
   if(mode==='client') {
     const server=await require('./local-client/client.cjs').createClient(config);
     const url=new URL(config.clientOrigin);await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(Number(url.port||80),config.clientBindHost,resolve);});
     console.log('CLIENT_READY='+config.clientOrigin);return;
   }
-  const verifier=await require('./server/verifier.cjs').createVerifier(config);
+  const verifier=await require('./server/verifier.cjs').createVerifier(config,console.log);
   try {
+    console.log('AVVIO: creazione server OIDC');
     const app=await require('./server/app.cjs').createServer({config,...verifier});
+    console.log('AVVIO: apertura porta HTTP');
     const url=new URL(config.issuer);await new Promise((resolve,reject)=>{app.server.once('error',reject);app.server.listen(Number(url.port||80),config.bindHost,resolve);});
     console.log('OIDC_SERVER_READY='+config.issuer);
     let stopping=false;
